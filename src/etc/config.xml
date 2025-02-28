@@ -2,41 +2,123 @@
     <default>
         <payment>
             <icepay>
+                <active>0</active>
                 <debug>1</debug>
+
+                <bancontact>
+                    <active>0</active>
+                    <model>IcepayBancontact</model>
+                    <title>Bancontact</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </bancontact>
+                <creditcard>
+                    <active>0</active>
+                    <model>IcepayCreditcard</model>
+                    <title>Credit Card</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </creditcard>
+                <eps>
+                    <active>0</active>
+                    <model>IcepayEps</model>
+                    <title>EPS</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </eps>
+                <ideal>
+                    <active>0</active>
+                    <model>IcepayIdeal</model>
+                    <title>iDeal</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </ideal>
+                <onlineueberweisen>
+                    <active>0</active>
+                    <model>IcepayOnlineueberweisen</model>
+                    <title>Online Überweisen</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </onlineueberweisen>
+                <paypal>
+                    <active>0</active>
+                    <model>IcepayPaypal</model>
+                    <title>PayPal</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </paypal>
+                <sofort>
+                    <active>0</active>
+                    <model>IcepaySofort</model>
+                    <title>SOFORT</title>
+                    <payment_action>order</payment_action>
+                    <active>0</active>
+                    <is_gateway>1</is_gateway>
+                    <can_order>1</can_order>
+                    <can_refund>1</can_refund>
+                    <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                    <can_use_checkout>1</can_use_checkout>
+                    <allowspecific>0</allowspecific>
+                </sofort>
             </icepay>
+
+            <icepay_bancontact>
+                <model>IcepayBancontact</model>
+            </icepay_bancontact>
             <icepay_creditcard>
                 <model>IcepayCreditcard</model>
-                <title>Credit Card (ICEPAY)</title>
-                <payment_action>order</payment_action>
-                <active>0</active>
-                <is_gateway>1</is_gateway>
-                <can_order>1</can_order>
-                <can_use_checkout>1</can_use_checkout>
-                <can_void>1</can_void>
-                <can_authorize>1</can_authorize>
-                <can_capture>1</can_capture>
-                <can_capture_partial>1</can_capture_partial>
-                <can_authorize_vault>1</can_authorize_vault>
-                <can_capture_vault>1</can_capture_vault>
-                <can_use_internal>1</can_use_internal>
-                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
-                <can_refund>1</can_refund>
-                <can_void>1</can_void>
-                <can_cancel>1</can_cancel>
-                <can_edit>1</can_edit>
-                <can_review_payment>1</can_review_payment>
-                <can_deny_payment>1</can_deny_payment>
-                <cctypes>AE,VI,MC,DI,JCB,CUP,DN,MI</cctypes>
-                <useccv>1</useccv>
-                <order_status>processing</order_status>
-                <environment>sandbox</environment>
-                <allowspecific>0</allowspecific>
-                <public_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
-                <private_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
-                <masked_fields>cvv,number</masked_fields>
-                <privateInfoKeys>avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible,riskDataId,riskDataDecision</privateInfoKeys>
-                <paymentInfoKeys>cc_type,cc_number,avsPostalCodeResponseCode,avsStreetAddressResponseCode,cvvResponseCode,processorAuthorizationCode,processorResponseCode,processorResponseText,liabilityShifted,liabilityShiftPossible,riskDataId,riskDataDecision</paymentInfoKeys>
             </icepay_creditcard>
+            <icepay_eps>
+                <model>IcepayEps</model>
+            </icepay_eps>
+            <icepay_ideal>
+                <model>IcepayIdeal</model>
+            </icepay_ideal>
+            <icepay_onlineueberweisen>
+                <model>IcepayOnlineueberweisen</model>
+            </icepay_onlineueberweisen>
+            <icepay_paypal>
+                <model>IcepayPaypal</model>
+            </icepay_paypal>
+            <icepay_sofort>
+                <model>IcepaySofort</model>
+            </icepay_sofort>
         </payment>
     </default>
 </config>

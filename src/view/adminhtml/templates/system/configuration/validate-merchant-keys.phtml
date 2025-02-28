@@ -1,0 +1,64 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Icepay\Payment\Block\Adminhtml\Configuration\ValidateMerchantKeys $block */
+?>
+
+<button type="button" class="icepay-validate-api-key-button btn btn-primary">
+    Validate API Key
+</button>
+
+<div class="icepay-validate-result"></div>
+
+<script>
+    require([
+        'jquery',
+        'mage/translate',
+    ], function ($, __) {
+        var generateValidationMessage = function (result) {
+            if (!result.success) {
+                return __('Error, these settings are invalid:') + '<br><br>' + result.error;
+            }
+
+            var message = __('Success, your credentials are valid. Please make sure you press "Save". These methods are active:');
+            message += '<br>';
+
+            // Loop over result.methods
+            $.each(result.methods, function (index, method) {
+                message += '<br>- ' + method.description;
+            });
+
+            return message;
+        };
+
+        $('.icepay-validate-api-key-button').click(function () {
+            var merchantId = document.getElementById('payment_us_icepay_merchant_id').value;
+            var merchantSecret = document.getElementById('payment_us_icepay_merchant_secret').value;
+            var resultElement = $('.icepay-validate-result');
+
+            $.ajax({
+                url: '<?= $escaper->escapeJs($block->getUrl('icepay/configuration/validateApiKey')); ?>',
+                type: 'POST',
+                data: {
+                    merchantId: merchantId,
+                    merchantSecret: merchantSecret,
+                },
+                dataType: 'json',
+                showLoader: true,
+                success: function (response) {
+                    resultElement.html('<br>' + generateValidationMessage(response))
+                },
+                error: function (xhr, status, error) {
+                    resultElement.html(
+                        '<br>' +
+                        __('Something went wrong with the request while fetching the validation result') +
+                        '<br><br>' +
+                        error
+                    )
+                }
+            });
+        });
+    });
+</script>

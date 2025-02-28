@@ -13,12 +13,11 @@ enum PaymentMethod: string
     case onlineueberweisen = 'onlineueberweisen';
     case card = 'card';
     case paypal = 'paypal';
-    case EPS = 'EPS';
-    case SOFORT = 'SOFORT';
+    case EPS = 'eps';
+    case SOFORT = 'sofort';
 
     public static function fromPayment(OrderPaymentInterface $payment): self
     {
-        return static::ideal;
         $method = $payment->getMethod();
 
         if ($method == 'icepay_creditcard') {

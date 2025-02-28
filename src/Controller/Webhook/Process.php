@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Icepay\Payment\Controller\Webhook;
 
 use Icepay\Payment\Config;
-use Icepay\Payment\Data\PaymentResponseFactory;
+use Icepay\Payment\Data\PaymentResponseBuilder;
 use Icepay\Payment\Logger;
 use Icepay\Payment\Service\Icepay\IsValidRequest;
 use Icepay\Payment\Service\Icepay\ProcessResponse;
@@ -21,7 +21,7 @@ class Process implements HttpGetActionInterface, HttpPostActionInterface, CsrfAw
     public function __construct(
         private readonly RequestInterface $request,
         private readonly ResultFactory $resultFactory,
-        private readonly PaymentResponseFactory $paymentResponseFactory,
+        private readonly PaymentResponseBuilder $paymentResponseFactory,
         private readonly IsValidRequest $isValidRequest,
         private readonly ProcessResponse $processResponse,
         private readonly Logger $logger

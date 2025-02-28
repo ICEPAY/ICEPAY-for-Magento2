@@ -7,7 +7,7 @@ namespace Icepay\Payment\Icepay;
 use GuzzleHttp\ClientFactory;
 use Icepay\Payment\Config;
 use Icepay\Payment\Data\PaymentResponse;
-use Icepay\Payment\Data\PaymentResponseFactory;
+use Icepay\Payment\Data\PaymentResponseBuilder;
 use Magento\Sales\Api\Data\OrderInterface;
 
 class GetCheckoutByOrder
@@ -15,7 +15,7 @@ class GetCheckoutByOrder
     public function __construct(
         private readonly Config $config,
         private readonly ClientFactory $clientFactory,
-        private readonly PaymentResponseFactory $paymentResponseFactory,
+        private readonly PaymentResponseBuilder $paymentResponseFactory,
     ) {}
 
     public function execute(OrderInterface $order): PaymentResponse

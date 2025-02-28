@@ -23,6 +23,11 @@ class Config
         );
     }
 
+    public function isActive(?int $storeId = null): bool
+    {
+        return (bool) $this->getValue('payment/icepay/active', $storeId);
+    }
+
     public function getMerchantId(?int $storeId = null): string
     {
         return (string) $this->getValue('payment/icepay/merchant_id', $storeId);
@@ -32,5 +37,14 @@ class Config
     {
         $value = $this->getValue('payment/icepay/merchant_secret', $storeId);
         return $value ? $this->encryptor->decrypt($value) : null;
+    }
+
+    public function isDebugEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            'payment/icepay/debug',
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+            $storeId
+        );
     }
 }

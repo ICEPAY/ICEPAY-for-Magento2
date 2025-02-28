@@ -2,22 +2,56 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Icepay\Payment\Logger">
         <arguments>
-            <argument name="name" xsi:type="string">controlaltdelete_icepay</argument>
+            <argument name="name" xsi:type="string">icepay</argument>
             <argument name="handlers" xsi:type="array">
-                <item name="system" xsi:type="object">Icepay\Payment\CustomLogFileHandler</item>
+                <item name="system" xsi:type="object">Icepay\Payment\Logger\Handler</item>
             </argument>
         </arguments>
     </type>
 
-    <virtualType name="Icepay\Payment\CustomLogFileHandler" type="Magento\Framework\Logger\Handler\Base">
+    <virtualType name="Icepay\Payment\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
-            <argument name="fileName" xsi:type="string">/var/log/controlaltdelete_icepay.log</argument>
+            <argument name="fileName" xsi:type="string">/var/log/icepay.log</argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="Magento\Payment\Model\Method\MyCustomDebug" type="Magento\Framework\Logger\Handler\Base">
+    <virtualType name="IcepayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
-            <argument name="fileName" xsi:type="string">/var/log/controlaltdelete_icepay.log</argument>
+            <argument name="commands" xsi:type="array">
+                <item name="order" xsi:type="string">Icepay\Payment\Gateway\Commands\OrderCommand</item>
+                <item name="refund" xsi:type="string">Icepay\Payment\Gateway\Commands\RefundCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Bancontact -->
+    <virtualType name="IcepayBancontact" type="Icepay\Payment\Model\IcepayMethod">
+        <arguments>
+            <argument name="code" xsi:type="string">icepay_bancontact</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepayBancontactValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayBancontactValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepayBancontactConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayBancontactConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">IcepayBancontactConfigReader</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayBancontactConfigReader" type="Icepay\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">icepay_bancontact</argument>
         </arguments>
     </virtualType>
 
@@ -28,7 +62,6 @@
             <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayCreditcardValueHandlerPool</argument>
-<!--            <argument name="validatorPool" xsi:type="object">BraintreeValidatorPool</argument>-->
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
         </arguments>
     </virtualType>
@@ -37,8 +70,6 @@
         <arguments>
             <argument name="handlers" xsi:type="array">
                 <item name="default" xsi:type="string">IcepayCreditcardConfigValueHandler</item>
-<!--                <item name="can_void" xsi:type="string">Magento\Braintree\Gateway\Config\CanVoidHandler</item>-->
-<!--                <item name="can_cancel" xsi:type="string">Magento\Braintree\Gateway\Config\CanVoidHandler</item>-->
             </argument>
         </arguments>
     </virtualType>
@@ -49,45 +80,164 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="IcepayCreditcardConfigReader" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="IcepayCreditcardConfigReader" type="Icepay\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="string">icepay_creditcard</argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="IcepayCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+    <!-- EPS -->
+    <virtualType name="IcepayEps" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="order" xsi:type="string">Icepay\Payment\Gateway\Commands\OrderCommand</item>
-<!--                <item name="authorize" xsi:type="string">BraintreeAuthorizeCommand</item>-->
+            <argument name="code" xsi:type="string">icepay_eps</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepayEpsValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayEpsValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepayEpsConfigValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="IcepayOrderCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+    <virtualType name="IcepayEpsConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="requestBuilder" xsi:type="object">BraintreeAuthorizeRequest</argument>
-            <argument name="transferFactory" xsi:type="object">Magento\Braintree\Gateway\Http\TransferFactory</argument>
-            <argument name="client" xsi:type="object">Magento\Braintree\Gateway\Http\Client\TransactionSale</argument>
-            <argument name="handler" xsi:type="object">BraintreeAuthorizationHandler</argument>
-            <argument name="validator" xsi:type="object">Magento\Braintree\Gateway\Validator\ResponseValidator</argument>
+            <argument name="configInterface" xsi:type="object">IcepayEpsConfigReader</argument>
         </arguments>
     </virtualType>
 
-    <virtualType name="BraintreeAuthorizeRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
+    <virtualType name="IcepayEpsConfigReader" type="Icepay\Payment\Gateway\Config\Config">
         <arguments>
-            <argument name="builders" xsi:type="array">
-                <item name="customer" xsi:type="string">Magento\Braintree\Gateway\Request\CustomerDataBuilder</item>
-                <item name="payment" xsi:type="string">Magento\Braintree\Gateway\Request\PaymentDataBuilder</item>
-                <item name="channel" xsi:type="string">Magento\Braintree\Gateway\Request\ChannelDataBuilder</item>
-                <item name="address" xsi:type="string">Magento\Braintree\Gateway\Request\AddressDataBuilder</item>
-                <item name="vault" xsi:type="string">Magento\Braintree\Gateway\Request\VaultDataBuilder</item>
-                <item name="3dsecure" xsi:type="string">Magento\Braintree\Gateway\Request\ThreeDSecureDataBuilder</item>
-                <item name="device_data" xsi:type="string">Magento\Braintree\Gateway\Request\KountPaymentDataBuilder</item>
-                <item name="dynamic_descriptor" xsi:type="string">Magento\Braintree\Gateway\Request\DescriptorDataBuilder</item>
-                <item name="store" xsi:type="string">Magento\Braintree\Gateway\Request\StoreConfigBuilder</item>
-                <item name="merchant_account" xsi:type="string">Magento\Braintree\Gateway\Request\MerchantAccountDataBuilder</item>
+            <argument name="methodCode" xsi:type="string">icepay_eps</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Ideal -->
+    <virtualType name="IcepayIdeal" type="Icepay\Payment\Model\IcepayMethod">
+        <arguments>
+            <argument name="code" xsi:type="string">icepay_ideal</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepayIdealValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayIdealValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepayIdealConfigValueHandler</item>
             </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayIdealConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">IcepayIdealConfigReader</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayIdealConfigReader" type="Icepay\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">icepay_ideal</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Online Überweisen -->
+    <virtualType name="IcepayOnlineueberweisen" type="Icepay\Payment\Model\IcepayMethod">
+        <arguments>
+            <argument name="code" xsi:type="string">icepay_onlineueberweisen</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepayOnlineueberweisenValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayOnlineueberweisenValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepayOnlineueberweisenConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayOnlineueberweisenConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">IcepayOnlineueberweisenConfigReader</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayOnlineueberweisenConfigReader" type="Icepay\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">icepay_onlineueberweisen</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- PayPal -->
+    <virtualType name="IcepayPaypal" type="Icepay\Payment\Model\IcepayMethod">
+        <arguments>
+            <argument name="code" xsi:type="string">icepay_paypal</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepayPaypalValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayPaypalValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepayPaypalConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayPaypalConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">IcepayPaypalConfigReader</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayPaypalConfigReader" type="Icepay\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">icepay_paypal</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Sofort -->
+    <virtualType name="IcepaySofort" type="Icepay\Payment\Model\IcepayMethod">
+        <arguments>
+            <argument name="code" xsi:type="string">icepay_sofort</argument>
+            <argument name="formBlockType" xsi:type="string">Icepay\Payment\Block\Method\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">IcepaySofortValueHandlerPool</argument>
+            <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepaySofortValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">IcepaySofortConfigValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepaySofortConfigValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">IcepaySofortConfigReader</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepaySofortConfigReader" type="Icepay\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">icepay_sofort</argument>
         </arguments>
     </virtualType>
 </config>

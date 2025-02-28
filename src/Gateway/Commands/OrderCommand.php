@@ -6,7 +6,8 @@ namespace Icepay\Payment\Gateway\Commands;
 
 use GuzzleHttp\ClientFactory;
 use Icepay\Payment\Config;
-use Icepay\Payment\Data\PaymentResponseFactory;
+use Icepay\Payment\Data\PaymentResponseBuilder;
+use Icepay\Payment\Gateway\IcepayClient;
 use Icepay\Payment\Logger;
 use Icepay\Payment\Service\Icepay\RedirectUrl;
 use Magento\Framework\UrlInterface;
@@ -21,9 +22,8 @@ class OrderCommand implements CommandInterface
     public function __construct(
         private readonly Logger $logger,
         private readonly UrlInterface $url,
-        private readonly ClientFactory $clientFactory,
-        private readonly Config $config,
-        private readonly PaymentResponseFactory $paymentResponseFactory,
+        private readonly IcepayClient $client,
+        private readonly PaymentResponseBuilder $paymentResponseFactory,
         private readonly RedirectUrl $redirectUrl,
     ) {}
 
@@ -39,20 +39,11 @@ class OrderCommand implements CommandInterface
 
         $payment->setIsTransactionPending(true);
 
-        $merchantId = $this->config->getMerchantId();
-        $merchantSecret = $this->config->getMerchantSecret();
-
-        /** @var \GuzzleHttp\Client $client */
-        $client = $this->clientFactory->create();
-
         $request = $this->getRequest($payment->getOrder());
         $this->logger->info('Sending request to Icepay', ['request' => $request]);
-        $response = $client->post(
-            'https://checkout.icepay.com/api/payments',
-            [
-                'auth' => [$merchantId, $merchantSecret],
-                'json' => $request,
-            ]
+        $response = $this->client->create()->post(
+            'payments',
+            ['json' => $request,]
         );
 
         $responseBody = (string)$response->getBody();
@@ -63,7 +54,7 @@ class OrderCommand implements CommandInterface
 
         $payment->setTransactionId($response->key);
         $payment->setAdditionalInformation('icepay_reference', $response->key);
-        $payment->setAdditionalInformation('icepay_redirect_url', $response->links->checkout->href);
+        $payment->setAdditionalInformation('icepay_redirect_url', $response->links->direct->href);
     }
 
     private function getRequest(OrderInterface $order): array

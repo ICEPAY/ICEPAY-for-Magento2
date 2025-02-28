@@ -4,6 +4,10 @@
         {
             "name": "ICEPAY",
             "email": "info@icepay.com"
+        },
+        {
+            "name": "Michiel Gerritsen (Control Alt Delete BV)",
+            "email": "michiel@controlaltdelete.dev"
         }
     ],
     "require": {
