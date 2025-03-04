@@ -9,6 +9,6 @@ class LinkCollection
     public function __construct(
         public readonly Link $checkout,
         public readonly Link $documentation,
-        public readonly ?Link $direct,
+        public readonly ?Link $direct = null,
     ) {}
 }
