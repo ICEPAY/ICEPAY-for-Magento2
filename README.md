@@ -15,7 +15,7 @@ This module is a payment gateway for Magento 2 webshops. It allows you to integr
 To install the module, you can use composer. Run the following command in your Magento 2 root directory:
 
 ```bash
-composer require icepay/magento2-module
+composer require icepay/magento2
 php bin/magento module:enable Icepay_Payment
 ```
 
