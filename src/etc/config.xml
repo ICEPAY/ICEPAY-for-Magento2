@@ -47,7 +47,7 @@
                 <ideal>
                     <active>0</active>
                     <model>IcepayIdeal</model>
-                    <title>iDeal</title>
+                    <title>iDEAL</title>
                     <payment_action>order</payment_action>
                     <active>0</active>
                     <is_gateway>1</is_gateway>
