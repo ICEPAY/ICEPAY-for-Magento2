@@ -23,5 +23,8 @@
         "psr-4": {
             "Icepay\\Payment\\": "src/"
         }
+    },
+    "suggest": {
+        "ICEPAY/ICEPAY-for-Magento2-Hyva-Checkout": "ICEPAY module for Hyvä Checkout"
     }
 }

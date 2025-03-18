@@ -23,6 +23,11 @@ php bin/magento module:enable Icepay_Payment
 
 All configuration can be found under Stores -> Configuration -> Sales -> Payment -> ICEPAY. Under this group you can enable and disable each method individually.
 
+# Hyvä Checkout
+
+There is a separate support package for Hyvä Checkout, which can be found here:
+https://github.com/ICEPAY/ICEPAY-for-Magento2-Hyva-Checkout
+
 ## Support
 
 Bugs, feature requests and questions can be reported by sending an email to info@icepay.com.
