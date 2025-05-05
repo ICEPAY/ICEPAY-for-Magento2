@@ -7,6 +7,7 @@ namespace Icepay\Payment;
 use DateTimeZone;
 use Magento\Framework\Logger\Monolog;
 use Monolog\DateTimeImmutable;
+use Monolog\Level;
 
 class Logger extends Monolog
 {
@@ -22,7 +23,7 @@ class Logger extends Monolog
 
 
     public function addRecord(
-        int $level,
+        int|Level $level,
         string $message,
         array $context = [],
         ?DateTimeImmutable $datetime = null
