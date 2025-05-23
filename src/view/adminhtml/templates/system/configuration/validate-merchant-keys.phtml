@@ -34,8 +34,8 @@ declare(strict_types=1);
         };
 
         $('.icepay-validate-api-key-button').click(function () {
-            var merchantId = document.getElementById('payment_us_icepay_merchant_id').value;
-            var merchantSecret = document.getElementById('payment_us_icepay_merchant_secret').value;
+            var merchantId = document.getElementById('payment_icepay_merchant_id').value;
+            var merchantSecret = document.getElementById('payment_icepay_merchant_secret').value;
             var resultElement = $('.icepay-validate-result');
 
             $.ajax({
