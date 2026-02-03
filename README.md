@@ -5,7 +5,7 @@ This module is a payment gateway for Magento 2 webshops. It allows you to integr
 - Bancontact
 - Credit Cards
 - EPS
-- iDEAL
+- iDEAL | Wero
 - Online Überweisen
 - PayPal
 - SOFORT

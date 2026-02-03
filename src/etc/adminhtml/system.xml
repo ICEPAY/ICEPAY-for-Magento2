@@ -153,7 +153,7 @@
                 </group>
                 <group id="ideal" translate="label" type="text" sortOrder="530" showInDefault="1"
                        showInWebsite="1" showInStore="1">
-                    <label>iDEAL</label>
+                    <label>iDEAL | Wero</label>
 
                     <field id="active" translate="label" type="select" sortOrder="10" showInDefault="1"
                            showInWebsite="1">

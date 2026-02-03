@@ -123,7 +123,7 @@
         </arguments>
     </virtualType>
 
-    <!-- iDEAL -->
+    <!-- iDEAL | Wero -->
     <virtualType name="IcepayIdeal" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
             <argument name="code" xsi:type="string">icepay_ideal</argument>
