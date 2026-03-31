@@ -38,6 +38,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayBancontactValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayBancontactValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -61,6 +62,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayBancontactValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayBancontactCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayBancontactCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayBancontactConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Creditcard -->
     <virtualType name="IcepayCreditcard" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -69,6 +84,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayCreditcardValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayCreditcardValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -92,6 +108,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayCreditcardValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayCreditcardCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayCreditcardCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayCreditcardConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- EPS -->
     <virtualType name="IcepayEps" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -100,6 +130,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayEpsValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayEpsValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -123,6 +154,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayEpsValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayEpsCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayEpsCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayEpsConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- iDEAL | Wero -->
     <virtualType name="IcepayIdeal" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -131,6 +176,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayIdealValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayIdealValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -154,6 +200,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayIdealValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayIdealCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayIdealCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayIdealConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Online Überweisen -->
     <virtualType name="IcepayOnlineueberweisen" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -162,6 +222,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayOnlineueberweisenValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayOnlineueberweisenValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -185,6 +246,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayOnlineueberweisenValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayOnlineueberweisenCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayOnlineueberweisenCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayOnlineueberweisenConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- PayPal -->
     <virtualType name="IcepayPaypal" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -193,6 +268,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepayPaypalValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepayPaypalValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -216,6 +292,20 @@
         </arguments>
     </virtualType>
 
+    <virtualType name="IcepayPaypalValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepayPaypalCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepayPaypalCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepayPaypalConfigReader</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Sofort -->
     <virtualType name="IcepaySofort" type="Icepay\Payment\Model\IcepayMethod">
         <arguments>
@@ -224,6 +314,7 @@
             <argument name="infoBlockType" xsi:type="string">Icepay\Payment\Block\Method\Info</argument>
             <argument name="valueHandlerPool" xsi:type="object">IcepaySofortValueHandlerPool</argument>
             <argument name="commandPool" xsi:type="object">IcepayCommandPool</argument>
+            <argument name="validatorPool" xsi:type="object">IcepaySofortValidatorPool</argument>
         </arguments>
     </virtualType>
 
@@ -244,6 +335,20 @@
     <virtualType name="IcepaySofortConfigReader" type="Icepay\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="string">icepay_sofort</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepaySofortValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">IcepaySofortCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="IcepaySofortCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">IcepaySofortConfigReader</argument>
         </arguments>
     </virtualType>
 </config>
