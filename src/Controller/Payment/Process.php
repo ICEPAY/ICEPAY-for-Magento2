@@ -44,7 +44,7 @@ class Process implements HttpGetActionInterface
             return $response->setUrl('/checkout/cart');
         }
 
-        $this->checkoutSession->setLastRealOrder($order)
+        $this->checkoutSession->setLastRealOrderId($order->getIncrementId())
             ->setLastOrderId($order->getId())
             ->setLastQuoteId($order->getQuoteId())
             ->setLastSuccessQuoteId($order->getQuoteId())
