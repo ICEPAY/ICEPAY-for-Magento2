@@ -73,7 +73,11 @@ class OrderCommand implements CommandInterface
 
         $payment->setTransactionId($response->key);
         $payment->setAdditionalInformation('icepay_reference', $response->key);
-        $payment->setAdditionalInformation('icepay_redirect_url', $response->links->direct->href);
+
+        $payment->setAdditionalInformation(
+            'icepay_redirect_url',
+            $response->links->direct?->href ?: $response->links->checkout->href
+        );
     }
 
     private function getRequest(OrderInterface $order): array
