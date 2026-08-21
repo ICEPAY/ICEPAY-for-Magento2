@@ -10,7 +10,6 @@
                     <model>IcepayBancontact</model>
                     <title>Bancontact</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -23,7 +22,6 @@
                     <model>IcepayCreditcard</model>
                     <title>Credit Card</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -36,7 +34,6 @@
                     <model>IcepayEps</model>
                     <title>EPS</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -49,7 +46,6 @@
                     <model>IcepayIdeal</model>
                     <title>iDEAL | Wero</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -62,7 +58,6 @@
                     <model>IcepayOnlineueberweisen</model>
                     <title>Online Überweisen</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -75,7 +70,6 @@
                     <model>IcepayPaypal</model>
                     <title>PayPal</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>
@@ -88,7 +82,6 @@
                     <model>IcepaySofort</model>
                     <title>SOFORT</title>
                     <payment_action>order</payment_action>
-                    <active>0</active>
                     <is_gateway>1</is_gateway>
                     <can_order>1</can_order>
                     <can_refund>1</can_refund>

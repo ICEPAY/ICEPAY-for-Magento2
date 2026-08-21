@@ -18,12 +18,21 @@ enum PaymentMethod: string
 
     public static function fromPayment(OrderPaymentInterface $payment): self
     {
-        $method = $payment->getMethod();
+        return self::fromCode((string)$payment->getMethod());
+    }
 
-        if ($method == 'icepay_creditcard') {
-            return static::card;
+    public static function fromCode(string $code): self
+    {
+        return self::tryFromCode($code)
+            ?? throw new \ValueError(sprintf('"%s" is not a valid Icepay payment method code', $code));
+    }
+
+    public static function tryFromCode(string $code): ?self
+    {
+        if ($code === 'icepay_creditcard') {
+            return self::card;
         }
 
-        return static::from(str_replace('icepay_', '', $method));
+        return self::tryFrom(str_replace('icepay_', '', $code));
     }
 }
