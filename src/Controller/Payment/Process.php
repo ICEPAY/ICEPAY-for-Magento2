@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Controller\Payment;
 
-use Icepay\Payment\Data\Status;
+use ICEPAY\Checkout\Models\Status;
 use Icepay\Payment\Icepay\GetCheckoutByOrder;
 use Icepay\Payment\Service\GetOrderByIncrementId;
 use Magento\Checkout\Model\Session;
@@ -38,7 +38,7 @@ class Process implements HttpGetActionInterface
         $result = $this->getCheckoutByOrder->execute($order);
 
         $response = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-        if ($result->status != Status::COMPLETED) {
+        if ($result->status !== Status::completed) {
             $this->checkoutSession->restoreQuote();
 
             return $response->setUrl('/checkout/cart');

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Service\Icepay;
 
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\RequestOptions;
+use ICEPAY\Checkout\Exceptions\ApiException;
+use ICEPAY\Checkout\Models\Response\PaymentMethod;
 use Icepay\Payment\Config;
 use Icepay\Payment\Gateway\IcepayClient;
 use Magento\Framework\App\Cache\Type\Config as ConfigCache;
@@ -15,7 +15,6 @@ use Psr\Log\LoggerInterface;
 
 class GetEnabledPaymentMethods
 {
-    private const ENDPOINT = 'payments/methods';
     private const CACHE_KEY = 'icepay_enabled_payment_methods';
     private const CACHE_LIFETIME = 3600;
     private const FAILURE_CACHE_LIFETIME = 300;
@@ -100,12 +99,10 @@ class GetEnabledPaymentMethods
     private function fetch(): ?array
     {
         try {
-            $response = $this->client->create()->get(self::ENDPOINT, [
-                RequestOptions::CONNECT_TIMEOUT => self::CONNECT_TIMEOUT_SECONDS,
-                RequestOptions::TIMEOUT => self::REQUEST_TIMEOUT_SECONDS,
-            ]);
-            $methods = $this->serializer->unserialize((string)$response->getBody());
-        } catch (GuzzleException | \InvalidArgumentException $exception) {
+            $methods = $this->client
+                ->createWithTimeouts(self::CONNECT_TIMEOUT_SECONDS, self::REQUEST_TIMEOUT_SECONDS)
+                ->getPaymentMethods();
+        } catch (ApiException | \JsonException | \Error $exception) {
             $this->logger->error(
                 'Unable to retrieve the payment methods that are enabled at Icepay',
                 ['exception' => $exception]
@@ -114,16 +111,7 @@ class GetEnabledPaymentMethods
             return null;
         }
 
-        if (is_array($methods) === false) {
-            $this->logger->error(
-                'Icepay returned an unexpected response for ' . self::ENDPOINT . ', expected a list of methods',
-                ['response' => $methods]
-            );
-
-            return null;
-        }
-
-        return array_column($methods, 'id');
+        return array_map(static fn (PaymentMethod $method): string => $method->id, $methods);
     }
 
     private function hasCredentials(): bool

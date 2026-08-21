@@ -9,8 +9,12 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\RequestOptions;
+use ICEPAY\Checkout\CheckoutClient;
+use ICEPAY\Checkout\HttpClient;
 use Icepay\Payment\Gateway\IcepayClient;
 
 class FakeIcepayClient extends IcepayClient
@@ -41,12 +45,22 @@ class FakeIcepayClient extends IcepayClient
         return new self(new MockHandler([]));
     }
 
-    public function create(): Client
+    public function create(): CheckoutClient
     {
-        $stack = HandlerStack::create($this->handler);
-        $stack->push(Middleware::history($this->requestHistory));
+        return $this->checkoutClientOnMockedTransport([]);
+    }
 
-        return new Client(['handler' => $stack]);
+    public function createWithTimeouts(int $connectTimeoutSeconds, int $requestTimeoutSeconds): CheckoutClient
+    {
+        return $this->checkoutClientOnMockedTransport([
+            RequestOptions::CONNECT_TIMEOUT => $connectTimeoutSeconds,
+            RequestOptions::TIMEOUT => $requestTimeoutSeconds,
+        ]);
+    }
+
+    public function createWithCredentials(string $merchantId, string $merchantSecret): CheckoutClient
+    {
+        return $this->checkoutClientOnMockedTransport([]);
     }
 
     public function requestCount(): int
@@ -57,5 +71,16 @@ class FakeIcepayClient extends IcepayClient
     public function lastRequestOptions(): array
     {
         return $this->requestHistory[count($this->requestHistory) - 1]['options'] ?? [];
+    }
+
+    private function checkoutClientOnMockedTransport(array $guzzleConfig): CheckoutClient
+    {
+        $stack = HandlerStack::create($this->handler);
+        $stack->push(Middleware::history($this->requestHistory));
+        $factory = new HttpFactory();
+        $guzzle = new Client(['handler' => $stack] + $guzzleConfig);
+
+        return (new CheckoutClient(new HttpClient($guzzle, $factory, $factory)))
+            ->withAuthorization('fake-merchant', 'fake-secret');
     }
 }

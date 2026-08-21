@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Gateway\Commands;
 
-use GuzzleHttp\ClientFactory;
-use GuzzleHttp\Exception\ServerException;
-use Icepay\Payment\Config;
-use Icepay\Payment\Data\ErrorResponseBuilder;
-use Icepay\Payment\Data\PaymentResponseBuilder;
+use ICEPAY\Checkout\Exceptions\ApiException;
+use ICEPAY\Checkout\Models\Amount;
+use ICEPAY\Checkout\Models\Links;
+use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
 use Icepay\Payment\Gateway\IcepayClient;
 use Icepay\Payment\Logger;
+use Icepay\Payment\Service\Icepay\AmountInCents;
 use Icepay\Payment\Service\Icepay\RedirectUrl;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\UrlInterface;
@@ -26,9 +26,8 @@ class OrderCommand implements CommandInterface
         private readonly Logger $logger,
         private readonly UrlInterface $url,
         private readonly IcepayClient $client,
-        private readonly PaymentResponseBuilder $paymentResponseFactory,
+        private readonly AmountInCents $amountInCents,
         private readonly RedirectUrl $redirectUrl,
-        private readonly ErrorResponseBuilder $errorResponseBuilder,
     ) {}
 
     /**
@@ -39,14 +38,10 @@ class OrderCommand implements CommandInterface
     {
         try {
             $this->createIcepayCheckout($commandSubject);
-        } catch (ServerException $exception) {
+        } catch (ApiException $exception) {
             $this->logger->error($exception->getMessage());
 
-            $errorResponse = $this->errorResponseBuilder->fromJson($exception->getResponse()->getBody()->__toString());
-
-            throw new LocalizedException(
-                __($errorResponse->message)
-            );
+            throw new LocalizedException(__($exception->getMessage()), $exception);
         }
     }
 
@@ -59,49 +54,36 @@ class OrderCommand implements CommandInterface
         $payment->setIsTransactionPending(true);
 
         $request = $this->getRequest($payment->getOrder());
-        $this->logger->info('Sending request to Icepay', ['request' => $request]);
-        $response = $this->client->create()->post(
-            'payments',
-            ['json' => $request,]
-        );
+        $this->logger->info('Sending request to Icepay', ['request' => $request->jsonSerialize()]);
+        $response = $this->client->create()->createCheckout($request);
 
-        $responseBody = (string)$response->getBody();
-
-        $this->logger->info('Received response from Icepay', ['response' => $responseBody]);
-
-        $response = $this->paymentResponseFactory->createFromJson($responseBody);
+        $this->logger->info('Received response from Icepay', [
+            'response' => ['key' => $response->key, 'status' => $response->status->toString()],
+        ]);
 
         $payment->setTransactionId($response->key);
         $payment->setAdditionalInformation('icepay_reference', $response->key);
-
-        $payment->setAdditionalInformation(
-            'icepay_redirect_url',
-            $response->links->direct?->href ?: $response->links->checkout->href
-        );
+        $payment->setAdditionalInformation('icepay_redirect_url', $this->getRedirectUrl($response->links));
     }
 
-    private function getRequest(OrderInterface $order): array
+    private function getRedirectUrl(Links $links): string
     {
-        $redirectUrl = $this->redirectUrl->execute($order);
-        $webhookUrl = $this->url->getUrl('icepay/webhook/process', ['_secure' => true]);
+        return $links->direct ?? $links->checkout;
+    }
 
-        $method = PaymentMethod::fromPayment($order->getPayment());
+    private function getRequest(OrderInterface $order): CheckoutRequest
+    {
+        $request = new CheckoutRequest(
+            reference: $order->getIncrementId(),
+            amount: new Amount(
+                $this->amountInCents->fromMajorUnits((float) $order->getGrandTotal()),
+                $order->getOrderCurrencyCode()
+            ),
+            redirectUrl: $this->redirectUrl->execute($order),
+            webhookUrl: $this->url->getUrl('icepay/webhook/process', ['_secure' => true]),
+            paymentMethod: PaymentMethod::fromPayment($order->getPayment())->value,
+        );
 
-        return [
-            'reference' => $order->getIncrementId(),
-            'paymentMethod' => [
-                'type' => $method->value,
-            ],
-//            'description' => '',
-            'amount' => [
-                'value' => $order->getGrandTotal() * 100,
-                'currency' => $order->getOrderCurrencyCode(),
-            ],
-            'redirectUrl' => $redirectUrl,
-            'webhookUrl' => $webhookUrl,
-            'customer' => [
-                'email' => $order->getBillingAddress()->getEmail(),
-            ]
-        ];
+        return $request->withCustomerEmail((string) $order->getBillingAddress()->getEmail());
     }
 }

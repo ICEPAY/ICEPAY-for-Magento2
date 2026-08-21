@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Icepay;
 
-use GuzzleHttp\ClientFactory;
-use Icepay\Payment\Config;
-use Icepay\Payment\Data\PaymentResponse;
-use Icepay\Payment\Data\PaymentResponseBuilder;
+use ICEPAY\Checkout\Models\Response\Checkout;
 use Icepay\Payment\Gateway\IcepayClient;
 use Icepay\Payment\Logger;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -17,10 +14,9 @@ class GetCheckoutByOrder
     public function __construct(
         private readonly Logger $logger,
         private readonly IcepayClient $client,
-        private readonly PaymentResponseBuilder $paymentResponseFactory,
     ) {}
 
-    public function execute(OrderInterface $order): PaymentResponse
+    public function execute(OrderInterface $order): Checkout
     {
         $payment = $order->getPayment();
         /** @var string $reference */
@@ -29,13 +25,12 @@ class GetCheckoutByOrder
             throw new \InvalidArgumentException('Order does not have an Icepay reference');
         }
 
-        $client = $this->client->create();
-        $response = $client->get('https://checkout.icepay.com/api/payments/' . $reference);
+        $checkout = $this->client->create()->getCheckout($reference);
 
-        $responseBody = (string)$response->getBody();
+        $this->logger->info('Received response for redirect', [
+            'response' => ['key' => $checkout->key, 'status' => $checkout->status->toString()],
+        ]);
 
-        $this->logger->info('Received response for redirect', ['response' => $responseBody]);
-
-        return $this->paymentResponseFactory->createFromJson($responseBody);
+        return $checkout;
     }
 }

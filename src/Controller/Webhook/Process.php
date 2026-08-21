@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Controller\Webhook;
 
-use Icepay\Payment\Config;
-use Icepay\Payment\Data\PaymentResponseBuilder;
+use ICEPAY\Checkout\Exceptions\InvalidSignature;
 use Icepay\Payment\Logger;
-use Icepay\Payment\Service\Icepay\IsValidRequest;
+use Icepay\Payment\Service\Icepay\HandlePostback;
 use Icepay\Payment\Service\Icepay\ProcessResponse;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\Action\HttpPostActionInterface;
@@ -18,11 +17,12 @@ use Magento\Framework\Controller\ResultFactory;
 
 class Process implements HttpGetActionInterface, HttpPostActionInterface, CsrfAwareActionInterface
 {
+    private const SIGNATURE_HEADER = 'ICEPAY-Signature';
+
     public function __construct(
         private readonly RequestInterface $request,
         private readonly ResultFactory $resultFactory,
-        private readonly PaymentResponseBuilder $paymentResponseFactory,
-        private readonly IsValidRequest $isValidRequest,
+        private readonly HandlePostback $handlePostback,
         private readonly ProcessResponse $processResponse,
         private readonly Logger $logger
     ) {}
@@ -30,16 +30,21 @@ class Process implements HttpGetActionInterface, HttpPostActionInterface, CsrfAw
     public function execute()
     {
         $result = $this->resultFactory->create(ResultFactory::TYPE_RAW);
-        if (!$this->isValidRequest->execute()) {
+
+        $body = $this->request->getContent();
+
+        try {
+            $checkout = $this->handlePostback->execute(
+                $body,
+                (string) $this->request->getHeader(self::SIGNATURE_HEADER)
+            );
+        } catch (InvalidSignature) {
             $result->setHttpResponseCode(403);
             return $result;
         }
 
-        $body = $this->request->getContent();
         $this->logger->info('Received webhook', ['body' => $body]);
-        $response = $this->paymentResponseFactory->createFromJson($body);
-
-        $this->processResponse->execute($response);
+        $this->processResponse->execute($checkout);
 
         $result->setContents('OK');
 
