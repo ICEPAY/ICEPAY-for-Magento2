@@ -15,6 +15,11 @@
         </arguments>
     </virtualType>
 
+    <type name="Icepay\Payment\Model\IcepayMethod">
+        <plugin name="icepay_check_payment_method_availability"
+                type="Icepay\Payment\Plugin\CheckPaymentMethodAvailability"/>
+    </type>
+
     <virtualType name="Icepay\Payment\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
         <arguments>
             <argument name="fileName" xsi:type="string">/var/log/icepay.log</argument>

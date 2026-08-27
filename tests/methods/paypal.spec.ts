@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 import {VisitCheckoutPaymentPage} from "../Actions/VisitCheckoutPaymentPage";
 import {Checkout} from "../Actions/Checkout";
 import {IcepayPaymentPage} from "../Actions/IcepayPaymentPage";
+import {isMethodAvailable} from "../Support/PaymentMethods";
+
+test.skip(() => !isMethodAvailable('icepay_paypal'), 'PayPal is not enabled for this Icepay merchant');
 
 test('Can place a successful order with PayPal', async ({ page }) => {
   await new VisitCheckoutPaymentPage(page).execute();

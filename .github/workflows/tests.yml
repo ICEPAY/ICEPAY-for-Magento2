@@ -1,0 +1,150 @@
+name: Tests
+
+on:
+  push:
+    tags:
+      - '*'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    env:
+      PHP_VERSION: php85-fpm
+      MAGENTO_VERSION: 2.4.9
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start the Magento container
+        run: docker compose -f .github/workflows/templates/docker-compose.yml up -d --quiet-pull magento
+
+      - name: Upload the code into the docker container
+        run: |
+          docker cp $(pwd) magento-project-community-edition:/data/extensions/
+          docker exec magento-project-community-edition composer config --no-plugins allow-plugins.php-http/discovery false
+          docker exec magento-project-community-edition ./install-composer-package icepay/magento2:@dev
+
+      - name: Run the unit tests
+        run: docker exec magento-project-community-edition vendor/bin/phpunit -c vendor/icepay/magento2/phpunit.xml.dist
+
+  secrets-gate:
+    # Only run the end-to-end tests when the pull request is opened or labeled with run_e2e_tests
+    if: ${{ github.event.label.name == 'run_e2e_tests' || github.event.action != 'labeled' }}
+    runs-on: ubuntu-latest
+    outputs:
+      is-secret-set: ${{ steps.is-secret-set.outputs.is_merchant_secret_set }}
+    steps:
+      - id: is-secret-set
+        env:
+          MERCHANT_SECRET: ${{ secrets.MERCHANT_SECRET }}
+        if: "${{ env.MERCHANT_SECRET != '' }}"
+        run: echo "is_merchant_secret_set=true" >> $GITHUB_OUTPUT
+
+  # Remove the flag used to trigger the end-to-end tests
+  remove_flag:
+    if: ${{ contains(github.event.*.labels.*.name, 'run_e2e_tests') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove run E2E tests label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: ${{ github.event.issue.number || github.event.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "run_e2e_tests"
+            })
+
+  e2e-tests:
+    needs:
+      - secrets-gate
+    if: needs.secrets-gate.outputs.is-secret-set == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PHP_VERSION: php85-fpm
+            MAGENTO_VERSION: 2.4.9
+          - PHP_VERSION: php81-fpm
+            MAGENTO_VERSION: 2.4.6
+    runs-on: ubuntu-latest
+    env:
+      PHP_VERSION: ${{ matrix.PHP_VERSION }}
+      MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Icepay derives the webhook URL from the store's base URL, so the store
+      # has to be reachable from the internet. Everything, including the
+      # browser, therefore runs through the tunnel. The tunnel URL is masked so
+      # the publicly readable workflow log does not advertise the live store,
+      # and the Icepay credentials are only exposed to this step: the compose
+      # file forwards them into the container at creation time.
+      - name: Start the Magento container
+        env:
+          ICEPAY_MERCHANT_ID: ${{ secrets.MERCHANT_ID }}
+          ICEPAY_MERCHANT_SECRET: ${{ secrets.MERCHANT_SECRET }}
+        run: |
+          docker compose -f .github/workflows/templates/docker-compose.yml up -d --quiet-pull magento
+          MAGENTO_URL=$(.github/workflows/templates/get-tunnel-url.sh .github/workflows/templates/docker-compose.yml)
+          echo "::add-mask::$MAGENTO_URL"
+          echo "::add-mask::${MAGENTO_URL#https://}"
+          echo "magento_url=$MAGENTO_URL" >> $GITHUB_ENV
+
+      - name: Upload the code into the docker container
+        run: |
+          docker cp $(pwd) magento-project-community-edition:/data/extensions/
+          docker exec magento-project-community-edition composer config --no-plugins allow-plugins.php-http/discovery false
+          docker exec magento-project-community-edition ./install-composer-package icepay/magento2:@dev
+
+      - name: Activate the extension
+        run: |
+          docker exec magento-project-community-edition ./retry "php bin/magento module:enable Icepay_Payment"
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:upgrade --keep-generated --no-interaction"
+
+      - name: Configure Icepay
+        run: docker exec magento-project-community-edition /bin/bash /data/configure-icepay.sh
+
+      - name: Prepare Magento
+        run: |
+          docker exec magento-project-community-edition /bin/bash ./change-base-url ${{ env.magento_url }}/
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:di:compile"
+          docker exec magento-project-community-edition ./retry "php bin/magento app:config:import -n"
+          docker exec magento-project-community-edition ./retry "php bin/magento setup:static-content:deploy -f nl_NL"
+          docker exec magento-project-community-edition ./retry "php bin/magento indexer:reindex"
+          docker exec magento-project-community-edition ./retry "php bin/magento cache:flush"
+
+      - name: Check if we can reach the Magento frontend
+        run: curl --fail-with-body -k -v -w "%{http_code}" ${{ env.magento_url }}/
+
+      - name: Check which payment methods Icepay has enabled
+        run: curl --fail-with-body -s ${{ env.magento_url }}/rest/V1/guest-carts/$(curl -s -X POST ${{ env.magento_url }}/rest/V1/guest-carts | tr -d '"')/payment-methods
+
+      - name: Install Playwright dependencies
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: BASE_URL="${{ env.magento_url }}/" FORCE_COLOR=true npx playwright test
+
+      - name: Dump docker compose logs
+        if: failure()
+        run: docker compose -f .github/workflows/templates/docker-compose.yml logs magento > magento.log
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: E2E logs - ${{ matrix.PHP_VERSION }} - ${{ matrix.MAGENTO_VERSION }}
+          path: |
+            test-results
+            playwright-report
+            magento-logs
+            magento.log

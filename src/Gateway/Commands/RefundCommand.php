@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Gateway\Commands;
 
-use GuzzleHttp\ClientFactory;
-use GuzzleHttp\Exception\ClientException;
+use ICEPAY\Checkout\Exceptions\ApiException;
+use ICEPAY\Checkout\Models\Request\Refund as RefundRequest;
 use Icepay\Payment\Gateway\IcepayClient;
 use Icepay\Payment\Logger;
+use Icepay\Payment\Service\Icepay\AmountInCents;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Payment\Gateway\Data\OrderAdapterInterface;
@@ -20,6 +21,7 @@ class RefundCommand implements CommandInterface
     public function __construct(
         private readonly Logger $logger,
         private readonly IcepayClient $client,
+        private readonly AmountInCents $amountInCents,
     ) {}
 
     /**
@@ -37,34 +39,26 @@ class RefundCommand implements CommandInterface
         $invoice = $payment->getCreditmemo()->getInvoice();
         $reference = $payment->getAdditionalInformation('icepay_reference');
 
+        $request = $this->getRequest((string) $commandSubject['amount'], $invoice);
+        $this->logger->info('Sending refund request to Icepay', ['request' => $request->jsonSerialize()]);
+
         try {
-            $response = $this->client->create()->post(
-                'payments/' . $reference . '/refund',
-                [
-                    'json' => $this->getRequest($commandSubject['amount'], $invoice),
-                ]
-            );
-        } catch (ClientException $exception) {
-            $contents = $exception->getResponse()->getBody()->getContents();
-            $json = json_decode($contents, true);
-            throw new LocalizedException(__('Unable to refund the payment: %1', $json['message']));
+            $response = $this->client->create()->refund($request, (string) $reference);
+        } catch (ApiException $exception) {
+            throw new LocalizedException(__('Unable to refund the payment: %1', $exception->getMessage()));
         }
 
-        $json = json_decode((string)$response->getBody(), true);
-        $payment->setTransactionId($json['key']);
+        $payment->setTransactionId($response->key);
     }
 
-    private function getRequest(string $amount, InvoiceInterface $invoice): array
+    private function getRequest(string $amount, InvoiceInterface $invoice): RefundRequest
     {
-        $amount = (int)round(floatval($amount) * 100, 0);
-        $description = __('Refund for invoice #%1', $invoice->getIncrementId());
+        $description = (string) __('Refund for invoice #%1', $invoice->getIncrementId());
 
-        return [
-            'reference' => $description,
-            'description' => $description,
-            'amount' => [
-                'value' => $amount,
-            ],
-        ];
+        return new RefundRequest(
+            $description,
+            $this->amountInCents->fromMajorUnits((float) $amount),
+            $description
+        );
     }
 }

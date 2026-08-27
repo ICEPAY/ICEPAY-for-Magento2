@@ -21,7 +21,7 @@ php bin/magento module:enable Icepay_Payment
 
 ## Configuration
 
-All configuration can be found under Stores -> Configuration -> Sales -> Payment -> ICEPAY. Under this group you can enable and disable each method individually.
+All configuration can be found under Stores -> Configuration -> Sales -> Payment -> ICEPAY. Under this group you can enable and disable each method individually. All methods are disabled by default, and a method you enable is only offered in the checkout when it is also enabled on your ICEPAY merchant account.
 
 # Hyvä Checkout
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Icepay\Payment\Controller\Adminhtml\Configuration;
 
-use GuzzleHttp\ClientFactory;
-use GuzzleHttp\Exception\ClientException;
+use ICEPAY\Checkout\Exceptions\ApiException;
+use ICEPAY\Checkout\Models\Response\PaymentMethod;
 use Icepay\Payment\Config;
 use Icepay\Payment\Gateway\IcepayClient;
 use Magento\Framework\App\Action\HttpPostActionInterface;
@@ -17,7 +17,6 @@ class ValidateApiKey implements HttpPostActionInterface
     public function __construct(
         private readonly RequestInterface $request,
         private readonly JsonFactory $resultJsonFactory,
-        private readonly ClientFactory $clientFactory,
         private readonly Config $config,
         private readonly IcepayClient $client,
     ) {}
@@ -36,34 +35,38 @@ class ValidateApiKey implements HttpPostActionInterface
         }
 
         try {
-            $serverResponse = $this->client->create()->get(
-                'payments/methods',
-                [
-                    'auth' => [$merchantId, $merchantSecret],
-                ]
-            );
-        } catch (ClientException) {
+            $methods = $this->client->createWithCredentials($merchantId, $merchantSecret)->getPaymentMethods();
+        } catch (ApiException $exception) {
             return $response->setData([
                 'success' => false,
-                'error' => __('Invalid Merchant ID or Merchant Secret.'),
+                'error' => $this->isCausedByInvalidCredentials($exception)
+                    ? __('Invalid Merchant ID or Merchant Secret.')
+                    : $exception->getMessage(),
             ]);
-        } catch (\Exception $exception) {
+        } catch (\JsonException $exception) {
             return $response->setData([
                 'success' => false,
                 'error' => $exception->getMessage(),
             ]);
         }
 
-        $contents = json_decode($serverResponse->getBody()->getContents());
-
-        usort($contents, function ($a, $b) {
+        usort($methods, function (PaymentMethod $a, PaymentMethod $b) {
             return strcasecmp($a->description, $b->description);
         });
 
         return $response->setData([
             'success' => true,
-            'methods' => $contents,
+            'methods' => array_map(static fn (PaymentMethod $method): array => [
+                'id' => $method->id,
+                'logo' => $method->logo,
+                'description' => $method->description,
+            ], $methods),
         ]);
+    }
+
+    private function isCausedByInvalidCredentials(ApiException $exception): bool
+    {
+        return $exception->getCode() >= 400 && $exception->getCode() < 500;
     }
 
     private function getMerchantValue(string $name, callable $defaultValue): ?string
